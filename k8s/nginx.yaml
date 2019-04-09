@@ -1,0 +1,44 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: config-tests-lb-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: config-tests-lb
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5555
+      targetPort: 5555
+      
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-tests-lb
+  labels:
+    app: config-tests-lb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-tests-lb
+  template:
+    metadata:
+      labels:
+        app: config-tests-lb
+    spec:
+      containers:
+        - name: config-tests-nginx
+          image: iezious/config-tests-nginx
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5555
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5555
+            initialDelaySeconds: 5
+            timeoutSeconds: 1

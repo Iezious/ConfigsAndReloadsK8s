@@ -1,0 +1,64 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: config-tests-service
+spec:
+  type: ClusterIP
+  selector:
+    app: config-tests
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5555
+      targetPort: 5555
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-tests-deployment
+  labels:
+    app: config-tests
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: config-tests
+  template:
+    metadata:
+      labels:
+        app: config-tests
+    spec:
+      containers:
+        - name: config-tests
+          image: iezious/config-tests
+          ports:
+            - containerPort: 5555
+          volumeMounts:
+            - name: config-volume
+              mountPath: /var/config
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://*:5555
+            - name: DOTNET_USE_POLLING_FILE_WATCHER
+              value: "1"
+            - name: CONSUL_URL
+              value: http://bg2-settle-dev:8500
+          livenessProbe:
+            httpGet:
+              path: /healz
+              port: 5555
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+      volumes:
+        - name: config-volume
+          configMap:
+            name: config-test-map
+            items:
+              - key: config.app.json
+                path: config.app.json
+
+      
+
+

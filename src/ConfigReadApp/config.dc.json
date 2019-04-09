@@ -1,0 +1,7 @@
+{
+  "Database": {
+    "ConnectionString": "localhost:27018",
+    "ReadOnly": false
+  },
+  "DC": "DEV"
+}
